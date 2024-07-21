@@ -9,7 +9,11 @@ class EloGuessr(nn.Module):
         super(EloGuessr, self).__init__()
         self.emb_layer = nn.Embedding(num_embeddings=vocab_len, embedding_dim=embdim,
                                       padding_idx = padding_idx)
-        self.encoder_layer = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads,
+        self.encoder_layer1 = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads,
+                                                        dim_feedforward=dim_ff, dropout=0.1,
+                                                        activation='relu', batch_first=True,
+                                                        device=device)
+        self.encoder_layer2 = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads,
                                                         dim_feedforward=dim_ff, dropout=0.1,
                                                         activation='relu', batch_first=True,
                                                         device=device)
@@ -20,7 +24,8 @@ class EloGuessr(nn.Module):
 
     def forward(self, x):
         out = self.emb_layer(x)
-        out = self.encoder_layer(out)
+        out = self.encoder_layer1(out)
+        out = self.encoder_layer2(out)
         out = out[:, -1, :]
 
         out = self.linblock1(out)
@@ -39,7 +44,6 @@ class LinearBlock(nn.Module):
 
     def forward(self, x):
         out = F.relu(self.fc(x))
-        out = self.lnorm(x)
-        out = self.dropout(x)
+        out = self.lnorm(out)
+        out = self.dropout(out)
         return out
-
