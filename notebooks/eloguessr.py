@@ -13,13 +13,15 @@ class EloGuessr(nn.Module):
         self.enc_block = EncoderBlock(embdim=embdim, num_heads=num_heads, dim_ff=dim_ff, device=device)
         #self.dec_block = LinearDecoder(embdim=embdim, device=device)
         self.dec_block = TransfDec(embdim=embdim, num_heads=num_heads, dim_ff=dim_ff, device=device)
-        self.fc_out = nn.Linear(embdim, 1)
+        self.conv1d = nn.Conv1d(in_channels=max_match_len, out_channels=1, kernel_size=21, stride=1, padding=4)
+        self.fc_out = nn.Linear(1012, 1)
 
     def forward(self, x):
         out = self.emb_layer(x)
         out = self.posenc(out)
         out = self.enc_block(out)
-        out = self.dec_block(out, out)[:, -1, :] # We pick the '[ELO]' token appended at the end as the feature vector
+        out = self.dec_block(out, out)[:, :, :] # We pick the '[ELO]' token appended at the end as the feature vector
+        out = self.conv1d(out).squeeze()
         out = self.fc_out(out)
         return out
     
@@ -46,9 +48,14 @@ class TransfDec(nn.Module):
         self.decode_layer1 = nn.TransformerDecoderLayer(d_model=embdim, nhead=num_heads,
                                                         dim_feedforward=dim_ff, batch_first=True,
                                                         device=device)
+
+        self.decode_layer2 = nn.TransformerDecoderLayer(d_model=embdim, nhead=num_heads,
+                                                        dim_feedforward=dim_ff, batch_first=True,
+                                                        device=device)
         
     def forward(self, x, memory):
         out = self.decode_layer1(x, memory)
+        out = self.decode_layer2(out, out)
         return out
 
 class LinearDecoder(nn.Module):
