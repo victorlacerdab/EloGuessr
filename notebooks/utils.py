@@ -71,10 +71,9 @@ def plot_gameslendist(encoded_dataset: list, num_buckets: int):
     plt.show()
 
 
-def load_data(path: str, batch_size: int) -> DataLoader:
-    fnames = ['chess_train.pt', 'chess_val.pt', 'chess_test.pt']
+def load_data(path: str, fnames: list[str], batch_size: int) -> DataLoader:
     train_dloader = DataLoader(torch.load(os.path.join(path, fnames[0])), shuffle=True, batch_size=batch_size)
-    val_dloader = DataLoader(torch.load(os.path.join(path, fnames[1])), shuffle=True, batch_size=batch_size)
-    test_dloader = DataLoader(torch.load(os.path.join(path, fnames[2])), shuffle=True, batch_size=batch_size)
+    val_dloader = DataLoader(torch.load(os.path.join(path, fnames[1])), shuffle=False, batch_size=batch_size)
+    test_dloader = DataLoader(torch.load(os.path.join(path, fnames[2])), shuffle=False, batch_size=batch_size)
     
     return train_dloader, val_dloader, test_dloader

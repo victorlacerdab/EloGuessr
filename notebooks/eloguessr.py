@@ -75,11 +75,15 @@ class LinearDecoder(nn.Module):
         self.linblock1 = LinearBlock(embdim, device=device)
         self.linblock2 = LinearBlock(embdim, device=device)
         self.linblock3 = LinearBlock(embdim, device=device)
+        self.linblock4 = LinearBlock(embdim, device=device)
+        self.linblock5 = LinearBlock(embdim, device=device)
     
     def forward(self, x):
         out = self.linblock1(x)
         out = self.linblock2(out)
         out = self.linblock3(out)
+        out = self.linblock4(out)
+        out = self.linblock5(out)
         return out
     
 class LinearBlock(nn.Module):
