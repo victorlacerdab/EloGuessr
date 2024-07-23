@@ -77,3 +77,9 @@ def load_data(path: str, fnames: list[str], batch_size: int) -> DataLoader:
     test_dloader = DataLoader(torch.load(os.path.join(path, fnames[2])), shuffle=False, batch_size=batch_size)
     
     return train_dloader, val_dloader, test_dloader
+
+def load_json_dict(filename):
+
+    with open(filename, 'r') as json_file:
+        data = json.load(json_file)
+    return data

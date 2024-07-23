@@ -12,7 +12,6 @@ class EloGuessr(nn.Module):
         self.posenc = PositionalEncoding(emb_dim=embdim, max_len=max_match_len)
         self.enc_block = EncoderBlock(embdim=embdim, num_heads=num_heads, dim_ff=dim_ff, device=device)
         self.dec_block = LinearDecoder(embdim=embdim, device=device)
-        #self.dec_block = TransfDec(embdim=embdim, num_heads=num_heads, dim_ff=dim_ff, device=device)
         self.conv1d = nn.Conv1d(in_channels=max_match_len, out_channels=1, kernel_size=5, stride=1, padding=2)
         self.fc_out = nn.Linear(embdim, 1)
 
@@ -45,45 +44,51 @@ class EncoderBlock(nn.Module):
                                                         dim_feedforward=dim_ff, dropout=0.1,
                                                         activation='relu', batch_first=True,
                                                         device=device)
+        #self.encoder_layer5 = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads,
+                                                        #dim_feedforward=dim_ff, dropout=0.1,
+                                                        #activation='relu', batch_first=True,
+                                                        #device=device)
+        #self.encoder_layer6 = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads,
+                                                        #dim_feedforward=dim_ff, dropout=0.1,
+                                                        #activation='relu', batch_first=True,
+                                                        #device=device)
+        #self.encoder_layer7 = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads,
+                                                        #dim_feedforward=dim_ff, dropout=0.1,
+                                                        #activation='relu', batch_first=True,
+                                                        #device=device)
+        #self.encoder_layer8 = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads,
+                                                        #dim_feedforward=dim_ff, dropout=0.1,
+                                                        #activation='relu', batch_first=True,
+                                                        #device=device)
+
         
     def forward(self, x):
         out = self.encoder_layer1(x)
         out = self.encoder_layer2(out)
         out = self.encoder_layer3(out)
         out = self.encoder_layer4(out)
+        #out = self.encoder_layer5(out)
+        #out = self.encoder_layer6(out)
+        #out = self.encoder_layer7(out)
+        #out = self.encoder_layer8(out)
         return out
 
-class TransfDec(nn.Module):
-    def __init__(self, embdim: int, num_heads: int, dim_ff: int,  device):
-        super(TransfDec, self).__init__()
-        self.decode_layer1 = nn.TransformerDecoderLayer(d_model=embdim, nhead=num_heads,
-                                                        dim_feedforward=dim_ff, batch_first=True,
-                                                        device=device)
-
-        self.decode_layer2 = nn.TransformerDecoderLayer(d_model=embdim, nhead=num_heads,
-                                                        dim_feedforward=dim_ff, batch_first=True,
-                                                        device=device)
-        
-    def forward(self, x, memory):
-        out = self.decode_layer1(x, memory)
-        out = self.decode_layer2(out, out)
-        return out
 
 class LinearDecoder(nn.Module):
     def __init__(self, embdim: int, device):
         super(LinearDecoder, self).__init__()
         self.linblock1 = LinearBlock(embdim, device=device)
-        self.linblock2 = LinearBlock(embdim, device=device)
-        self.linblock3 = LinearBlock(embdim, device=device)
-        self.linblock4 = LinearBlock(embdim, device=device)
-        self.linblock5 = LinearBlock(embdim, device=device)
+        #self.linblock2 = LinearBlock(embdim, device=device)
+        #self.linblock3 = LinearBlock(embdim, device=device)
+        #self.linblock4 = LinearBlock(embdim, device=device)
+        #self.linblock5 = LinearBlock(embdim, device=device)
     
     def forward(self, x):
         out = self.linblock1(x)
-        out = self.linblock2(out)
-        out = self.linblock3(out)
-        out = self.linblock4(out)
-        out = self.linblock5(out)
+        #out = self.linblock2(out)
+        #out = self.linblock3(out)
+        #out = self.linblock4(out)
+        #out = self.linblock5(out)
         return out
     
 class LinearBlock(nn.Module):
