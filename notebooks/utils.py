@@ -83,3 +83,13 @@ def load_json_dict(filename):
     with open(filename, 'r') as json_file:
         data = json.load(json_file)
     return data
+
+def backlash_remover(game_list):
+    
+    clean_games = []
+    
+    for game in game_list:
+        game = game.replace("\n", " ")
+        clean_games.append(game)
+    
+    return clean_games 
