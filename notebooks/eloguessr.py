@@ -44,22 +44,22 @@ class EncoderBlock(nn.Module):
                                                         dim_feedforward=dim_ff, dropout=0.1,
                                                         activation='relu', batch_first=True,
                                                         device=device)
-        #self.encoder_layer5 = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads,
-                                                        #dim_feedforward=dim_ff, dropout=0.1,
-                                                        #activation='relu', batch_first=True,
-                                                        #device=device)
-        #self.encoder_layer6 = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads,
-                                                        #dim_feedforward=dim_ff, dropout=0.1,
-                                                        #activation='relu', batch_first=True,
-                                                        #device=device)
-        #self.encoder_layer7 = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads,
-                                                        #dim_feedforward=dim_ff, dropout=0.1,
-                                                        #activation='relu', batch_first=True,
-                                                        #device=device)
-        #self.encoder_layer8 = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads,
-                                                        #dim_feedforward=dim_ff, dropout=0.1,
-                                                        #activation='relu', batch_first=True,
-                                                        #device=device)
+        self.encoder_layer5 = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads,
+                                                        dim_feedforward=dim_ff, dropout=0.1,
+                                                        activation='relu', batch_first=True,
+                                                        device=device)
+        self.encoder_layer6 = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads,
+                                                        dim_feedforward=dim_ff, dropout=0.1,
+                                                        activation='relu', batch_first=True,
+                                                        device=device)
+        self.encoder_layer7 = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads,
+                                                        dim_feedforward=dim_ff, dropout=0.1,
+                                                        activation='relu', batch_first=True,
+                                                        device=device)
+        self.encoder_layer8 = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads,
+                                                        dim_feedforward=dim_ff, dropout=0.1,
+                                                        activation='relu', batch_first=True,
+                                                        device=device)
 
         
     def forward(self, x):
@@ -67,10 +67,10 @@ class EncoderBlock(nn.Module):
         out = self.encoder_layer2(out)
         out = self.encoder_layer3(out)
         out = self.encoder_layer4(out)
-        #out = self.encoder_layer5(out)
-        #out = self.encoder_layer6(out)
-        #out = self.encoder_layer7(out)
-        #out = self.encoder_layer8(out)
+        out = self.encoder_layer5(out)
+        out = self.encoder_layer6(out)
+        out = self.encoder_layer7(out)
+        out = self.encoder_layer8(out)
         return out
 
 
