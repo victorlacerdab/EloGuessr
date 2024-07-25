@@ -10,19 +10,14 @@ class ChessPybara(nn.Module):
         self.posenc = PositionalEncoding(emb_dim=embdim, max_len=max_match_len)
         decoder_layers = nn.TransformerDecoderLayer(d_model=embdim, nhead=num_heads, dim_feedforward=dim_ff, batch_first=True, device=device)
         self.decoder = nn.TransformerDecoder(decoder_layer=decoder_layers, num_layers=num_decoder_layers)
+        self.softmax = nn.Softmax(vocab_len)
         
     def forward(self, x, tgt=None):
         out = self.emb_layer(x)
-        out = self.posenc(x)
-        out = self.decoder(x, tgt)
-
+        out = self.posenc(out)
+        out = self.decoder(out, tgt_is_causal=True)
+        out = out 
         pass
-
-
-
-
-
-
 
 class PositionalEncoding(nn.Module):
     def __init__(self, emb_dim: int, max_len: int):

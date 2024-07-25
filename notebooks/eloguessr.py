@@ -11,30 +11,21 @@ class EloGuessr(nn.Module):
         self.posenc = PositionalEncoding(emb_dim=embdim, max_len=max_match_len)
         encoder_layers = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads, dim_feedforward=dim_ff, batch_first=True, device=device)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layers, num_layers=num_encoder_layers)
-        self.dec_block = LinearBlock(emb_dim=embdim, device=device)
         self.fc_out = nn.Linear(embdim, 1)
 
     def forward(self, x):
+        pad_mask = self.get_pad_mask(x, self.emb_layer.padding_idx)
         out = self.emb_layer(x)
         out = self.posenc(out)
-        out = self.transformer_encoder(out)
-        out = out[:, -1, :]
+        out = self.transformer_encoder(out, src_key_padding_mask=pad_mask)
+        non_pad_indices = (x != self.emb_layer.padding_idx).sum(dim=1) - 1
+        out = out[torch.arange(out.size(0)), non_pad_indices]
         out = self.fc_out(out)
         out = out.squeeze(1)
         return out
-        
-class LinearBlock(nn.Module):
-    def __init__(self, emb_dim, device):
-        super(LinearBlock, self).__init__()
-        self.fc = nn.Linear(in_features=emb_dim, out_features=emb_dim, device=device)
-        self.lnorm = nn.LayerNorm(emb_dim, device=device)
-        self.dropout = nn.Dropout(0.1)
-
-    def forward(self, x):
-        out = F.relu(self.fc(x))
-        out = self.lnorm(out)
-        out = self.dropout(out)
-        return out
+    
+    def get_pad_mask(self, batch_sequence: torch.tensor, pad_token: int) -> torch.tensor:
+        return (batch_sequence == pad_token)
     
 class PositionalEncoding(nn.Module):
     def __init__(self, emb_dim: int, max_len: int):
