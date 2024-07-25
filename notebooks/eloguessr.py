@@ -2,7 +2,6 @@ import torch
 import math
 import torch.nn as nn
 import torch.nn.functional as F
-from torch import Tensor
 
 class EloGuessr(nn.Module):
     def __init__(self, vocab_len: int, num_heads: int, num_encoder_layers: int, embdim: int, dim_ff: int, padding_idx: int, max_match_len: int, device):
@@ -12,16 +11,16 @@ class EloGuessr(nn.Module):
         self.posenc = PositionalEncoding(emb_dim=embdim, max_len=max_match_len)
         encoder_layers = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads, dim_feedforward=dim_ff, batch_first=True, device=device)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layers, num_layers=num_encoder_layers)
-        #self.dec_block = LinearBlock(embdim=embdim, device=device)
+        self.dec_block = LinearBlock(emb_dim=embdim, device=device)
         self.fc_out = nn.Linear(embdim, 1)
 
     def forward(self, x):
         out = self.emb_layer(x)
         out = self.posenc(out)
-        out = self.transformer_encoder(out)[:, -1, :]
-        print(f'Transformers encoder out shape: {out.shape}')
+        out = self.transformer_encoder(out)
+        out = out[:, -1, :]
         out = self.fc_out(out)
-        print(f'Out shape: {out.shape}')
+        out = out.squeeze(1)
         return out
         
 class LinearBlock(nn.Module):
