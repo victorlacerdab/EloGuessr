@@ -7,9 +7,11 @@ class EloGuessr(nn.Module):
     def __init__(self, vocab_len: int, num_heads: int, num_encoder_layers: int, embdim: int, dim_ff: int, padding_idx: int, max_match_len: int, device):
         super(EloGuessr, self).__init__()
         self.emb_layer = nn.Embedding(num_embeddings=vocab_len, embedding_dim=embdim,
-                                      padding_idx = padding_idx)
+                                      padding_idx = padding_idx, max_norm=1)
         self.posenc = PositionalEncoding(emb_dim=embdim, max_len=max_match_len)
-        encoder_layers = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads, dim_feedforward=dim_ff, batch_first=True, device=device)
+        encoder_layers = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads,
+                                                    dim_feedforward=dim_ff, batch_first=True,
+                                                    bias=False, dropout=0.5, device=device)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layers, num_layers=num_encoder_layers)
         self.fc_out = nn.Linear(embdim, 1)
 
@@ -18,8 +20,7 @@ class EloGuessr(nn.Module):
         out = self.emb_layer(x)
         out = self.posenc(out)
         out = self.transformer_encoder(out, src_key_padding_mask=pad_mask)
-        non_pad_indices = (x != self.emb_layer.padding_idx).sum(dim=1) - 1
-        out = out[torch.arange(out.size(0)), non_pad_indices]
+        out = out[:, 0, :]
         out = self.fc_out(out)
         out = out.squeeze(1)
         return out

@@ -93,3 +93,7 @@ def backlash_remover(game_list):
         clean_games.append(game)
     
     return clean_games 
+
+def save_embedding_layer(model, file_path):
+    embedding_weights = model.emb_layer.state_dict()
+    torch.save(embedding_weights, file_path)
