@@ -4,11 +4,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class ChessPybara(nn.Module):
-    def __init__(self, vocab_len: int, num_heads: int, num_decoder_layers: int, embdim: int, dim_ff: int, padding_idx: int, max_match_len: int, device):
+    def __init__(self, vocab_len: int, num_heads: int, num_decoder_layers: int, embdim: int, dim_ff: int, padding_idx: int, max_match_len: int, 
+                device):
         super(ChessPybara, self).__init__()
         self.emb_layer = nn.Embedding(num_embeddings=vocab_len, embedding_dim=embdim, padding_idx=padding_idx)
         self.posenc = PositionalEncoding(emb_dim=embdim, max_len=max_match_len)
-        decoder_layers = nn.TransformerDecoderLayer(d_model=embdim, nhead=num_heads, dim_feedforward=dim_ff, batch_first=True)
+        decoder_layers = nn.TransformerDecoderLayer(d_model=embdim, nhead=num_heads, dim_feedforward=dim_ff, batch_first=True, activation='gelu', bias=False)
         self.decoder = nn.TransformerDecoder(decoder_layer=decoder_layers, num_layers=num_decoder_layers)
         self.fc = nn.Linear(embdim, vocab_len)
         self.device = device

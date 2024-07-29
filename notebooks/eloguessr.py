@@ -2,12 +2,20 @@ import torch
 import math
 import torch.nn as nn
 import torch.nn.functional as F
+from collections import OrderedDict
 
 class EloGuessr(nn.Module):
-    def __init__(self, vocab_len: int, num_heads: int, num_encoder_layers: int, embdim: int, dim_ff: int, padding_idx: int, max_match_len: int, device):
+    def __init__(self, vocab_len: int, num_heads: int, num_encoder_layers: int, embdim: int, dim_ff: int,
+                 padding_idx: int, max_match_len: int, pretrained_embeddings, device):
         super(EloGuessr, self).__init__()
-        self.emb_layer = nn.Embedding(num_embeddings=vocab_len, embedding_dim=embdim,
-                                      padding_idx = padding_idx, max_norm=1)
+
+        if isinstance(pretrained_embeddings, OrderedDict):
+            pretrained_embeddings = torch.stack(list(pretrained_embeddings.values())).squeeze(0)
+
+        if pretrained_embeddings is not None:
+            self.emb_layer = nn.Embedding.from_pretrained(pretrained_embeddings, freeze=False, padding_idx=padding_idx)
+        else:
+            self.emb_layer = nn.Embedding(num_embeddings=vocab_len, embedding_dim=embdim, padding_idx=padding_idx)
         self.posenc = PositionalEncoding(emb_dim=embdim, max_len=max_match_len)
         encoder_layers = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads,
                                                     dim_feedforward=dim_ff, batch_first=True,

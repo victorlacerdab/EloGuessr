@@ -15,8 +15,10 @@ Matches below that threshold are pruned, but matches ending in a Fool's mate are
 
 # Model architecture
 
+A two-step strategy is put in place to produce the best possible ELO predictions. First, we train a ChessPybara model on the task of next-token prediction using a decoder-only architecture.
+The idea is that we first "teach" the model how to play chess and employ transfer learning by using the learned token embeddings from ChessPybara to the final EloGuessr model. 
+
 The model uses four stacked, standard Transformers encoder layers to produce a dense representation of each match.
-Instead of appending a special token such as '\[ELO\]' to the end of each match and using its corresponding embedding (as is done in BERT), the vectors in the sequence are concatenated and 1d convolution is applied to the resulting vector.
 This final representation is passed to a linear layer, whose output is the predicted ELO for the match.
 
 One important observation is that the model is predicting the average ELO of the match instead of each player's individual ELO.
@@ -27,9 +29,11 @@ Moreover, if there is a high ELO differential between players, it becomes increa
 
 # Results
 
-Although the models could be purely evaluated based on final loss purely, a more informative metric is given by what percentage of predictions fall 
+The results for +- 25, +- 50, +- 100 and +- 250 are shown in the table below.
 
 # Improvements
 
 One possible experiment to ensure better performance would be to use a Misture of Experts framework.
 A model could be trained on the output of the Transformer's encoder to classify matches into 'Beginner' (ELO 0-999), 'Intermediate' (ELO 1000-1999), and 'Advanced' (2000+), and one of three specialized models for regression could be called to guess the ELO based on that information.
+
+Another source of improvement could come from better tokenization, such as using a BPE tokenizer or off-the-shelf chess tokenizers. Since this is just a proof-of-concept model, I decided to keep it simple, but better tokenization would most surely lead to better results.
