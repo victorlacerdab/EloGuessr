@@ -11,7 +11,8 @@ class ChessPybara(nn.Module):
         decoder_layers = nn.TransformerDecoderLayer(d_model=embdim, nhead=num_heads, dim_feedforward=dim_ff, batch_first=True)
         self.decoder = nn.TransformerDecoder(decoder_layer=decoder_layers, num_layers=num_decoder_layers)
         self.fc = nn.Linear(embdim, vocab_len)
-        
+        self.device = device
+
     def forward(self, x):
         out = self.emb_layer(x)
         out = self.posenc(out)
@@ -21,8 +22,7 @@ class ChessPybara(nn.Module):
         return out
     
     def generate_square_subsequent_mask(self, size):
-        mask = (torch.triu(torch.ones(size, size)) == 1).transpose(0, 1)
-        mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
+        mask = (torch.triu(torch.ones(size, size), diagonal=1)).bool().to(self.device)
         return mask
 
 class PositionalEncoding(nn.Module):
