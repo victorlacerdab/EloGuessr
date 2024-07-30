@@ -19,7 +19,7 @@ class EloGuessr(nn.Module):
         self.posenc = PositionalEncoding(emb_dim=embdim, max_len=max_match_len)
         encoder_layers = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads,
                                                     dim_feedforward=dim_ff, batch_first=True,
-                                                    bias=False, dropout=0.5, device=device)
+                                                    bias=True, dropout=0.5, device=device)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layers, num_layers=num_encoder_layers)
         self.fc_out = nn.Linear(embdim, 1)
 
@@ -28,7 +28,7 @@ class EloGuessr(nn.Module):
         out = self.emb_layer(x)
         out = self.posenc(out)
         out = self.transformer_encoder(out, src_key_padding_mask=pad_mask)
-        out = out[:, 0, :]
+        out = out[:, 0, :] # Gets only the embedding for the special '[ELO]' token.
         out = self.fc_out(out)
         out = out.squeeze(1)
         return out
