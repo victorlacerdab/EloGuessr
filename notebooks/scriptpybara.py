@@ -116,6 +116,7 @@ def train_causal(traindloader, valdloader, config_dict, device):
 model, tls, vls = train_causal(train_dloader, val_dloader, config_dict, device)
 plot_losses(tls, vls)
 
+print('Saving embeddings.')
 from utils import save_embedding_layer
 emb_data_dir = '/Home/siv33/vbo084/EloGuessr/models/embeddings'
 save_embedding_layer(model, os.path.join(emb_data_dir, 'decoder_emb512_elite_medium.pt'))
