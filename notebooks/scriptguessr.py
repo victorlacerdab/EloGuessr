@@ -7,12 +7,21 @@ import matplotlib.pyplot as plt
 from eloguessr import EloGuessr
 from utils import load_data, plot_losses, load_json_dict
 
-torch.manual_seed(33)
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-print(device)
+torch.manual_seed(22)
+
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
+
+if torch.cuda.is_available():
+    print(f"Using GPU: {torch.cuda.get_device_name(0)}")
+else:
+    print("CUDA is not available")
+
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 data_dir = '/Home/siv33/vbo084/EloGuessr/data/processed/'
 emb_data_dir = '/Home/siv33/vbo084/EloGuessr/models/embeddings'
+model_data_dir = '/Home/siv33/vbo084/EloGuessr/models/final_models/'
 
 fnames = ['chess_train_both_medium.pt', 'chess_val_both_medium.pt', 'chess_test_both_medium.pt']
 specnames = ['chess_both_medium.json']
@@ -23,7 +32,7 @@ VOCAB_LEN = dset_specs['vocab_len']
 PAD_IDX = dset_specs['pad_idx']
 MAX_LEN = dset_specs['match_len']
 
-BATCH_SIZE = 256
+BATCH_SIZE = 1024
 train_dloader, val_dloader, test_dloader = load_data(data_dir, fnames, batch_size=BATCH_SIZE)
 del test_dloader
 
@@ -34,9 +43,9 @@ config_dict = {'emb_dim': 512,
                'num_enc_layers': 8,
                'padding_idx': PAD_IDX,
                'dim_ff': 1024,
-               'epochs': 25,
-               'lr': 0.000001,
-               'embeddings': torch.load(os.path.join(emb_data_dir, 'decoder_emb512_elite_medium.pt'))}
+               'epochs': 5,
+               'lr': 0.0001,
+               'embeddings': torch.load(os.path.join(emb_data_dir, 'dcdr_emb512_elite_medium_45_epcs.pt'))}
 
 def train_model(traindloader, valdloader, config_dict, device):
     epochs = config_dict['epochs']
@@ -84,6 +93,9 @@ def train_model(traindloader, valdloader, config_dict, device):
         
         avg_val_loss = running_val_loss / len(valdloader)
         val_losses.append(avg_val_loss)
+
+        if epoch+1 % 5 == 0:
+            torch.save(model, os.path.join(model_data_dir, f'model_both_medium_{epoch}_epcs.pt'))
         
         print(f"Epoch {epoch+1}/{epochs}, Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}")
     
@@ -92,6 +104,3 @@ def train_model(traindloader, valdloader, config_dict, device):
 print(f'Starting to train EloGuessr.')
 model, tls, vls = train_model(train_dloader, val_dloader, config_dict, device)
 plot_losses(tls, vls)
-
-model_data_dir = '/Home/siv33/vbo084/EloGuessr/models/final_models/'
-torch.save(model, os.path.join(model_data_dir, 'model_both_medium.pt'))
