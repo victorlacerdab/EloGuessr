@@ -2,6 +2,7 @@ import torch
 import math
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.nn.modules.transformer import _generate_square_subsequent_mask
 
 class ChessPybara(nn.Module):
     def __init__(self, vocab_len: int, num_heads: int, num_decoder_layers: int, embdim: int, dim_ff: int, padding_idx: int, max_match_len: int, 
@@ -9,22 +10,18 @@ class ChessPybara(nn.Module):
         super(ChessPybara, self).__init__()
         self.emb_layer = nn.Embedding(num_embeddings=vocab_len, embedding_dim=embdim, padding_idx=padding_idx)
         self.posenc = PositionalEncoding(emb_dim=embdim, max_len=max_match_len)
-        decoder_layers = nn.TransformerDecoderLayer(d_model=embdim, nhead=num_heads, dim_feedforward=dim_ff, batch_first=True, activation='gelu', bias=True)
-        self.decoder = nn.TransformerDecoder(decoder_layer=decoder_layers, num_layers=num_decoder_layers)
+        decoder_layers = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads, dim_feedforward=dim_ff, batch_first=True, activation='gelu', bias=True)
+        self.decoder = nn.TransformerEncoder(decoder_layer=decoder_layers, num_layers=num_decoder_layers)
         self.fc = nn.Linear(embdim, vocab_len)
         self.device = device
 
     def forward(self, x):
         out = self.emb_layer(x)
         out = self.posenc(out)
-        mask = self.generate_square_subsequent_mask(out.size(1))
-        out = self.decoder(tgt=out, memory=out, tgt_mask = mask, tgt_is_causal=True)
+        mask = _generate_square_subsequent_mask(out.size(1))
+        out = self.decoder(src=out, mask = mask, is_causal=True)
         out = self.fc(out)
         return out
-    
-    def generate_square_subsequent_mask(self, size):
-        mask = (torch.triu(torch.ones(size, size), diagonal=1)).bool().to(self.device)
-        return mask
 
 class PositionalEncoding(nn.Module):
     def __init__(self, emb_dim: int, max_len: int):

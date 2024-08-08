@@ -108,7 +108,7 @@ def train_causal(traindloader, valdloader, config_dict, emb_data_dir, device):
                 loss = loss_fn(outputs, targets)
                 total_val_loss += loss.item()
 
-        if epoch % 5 == 0:
+        if epoch+1 % 5 == 0:
             save_embedding_layer(model, os.path.join(emb_data_dir, f'dcdr_emb512_elite_medium_{epoch}_epcs.pt'))
 
         avg_val_loss = total_val_loss / len(valdloader)
