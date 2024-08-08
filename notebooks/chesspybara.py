@@ -11,7 +11,7 @@ class ChessPybara(nn.Module):
         self.emb_layer = nn.Embedding(num_embeddings=vocab_len, embedding_dim=embdim, padding_idx=padding_idx)
         self.posenc = PositionalEncoding(emb_dim=embdim, max_len=max_match_len)
         decoder_layers = nn.TransformerEncoderLayer(d_model=embdim, nhead=num_heads, dim_feedforward=dim_ff, batch_first=True, activation='gelu', bias=True)
-        self.decoder = nn.TransformerEncoder(decoder_layer=decoder_layers, num_layers=num_decoder_layers)
+        self.decoder = nn.TransformerEncoder(encoder_layer=decoder_layers, num_layers=num_decoder_layers)
         self.fc = nn.Linear(embdim, vocab_len)
         self.device = device
 
@@ -19,6 +19,7 @@ class ChessPybara(nn.Module):
         out = self.emb_layer(x)
         out = self.posenc(out)
         mask = _generate_square_subsequent_mask(out.size(1))
+        mask = mask.to(self.device)
         out = self.decoder(src=out, mask = mask, is_causal=True)
         out = self.fc(out)
         return out
