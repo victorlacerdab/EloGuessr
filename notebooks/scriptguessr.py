@@ -32,18 +32,18 @@ VOCAB_LEN = dset_specs['vocab_len']
 PAD_IDX = dset_specs['pad_idx']
 MAX_LEN = dset_specs['match_len']
 
-BATCH_SIZE = 1024
+BATCH_SIZE = 2056
 train_dloader, val_dloader, test_dloader = load_data(data_dir, fnames, batch_size=BATCH_SIZE)
 del test_dloader
 
 config_dict = {'emb_dim': 512,
                'vocab_len': VOCAB_LEN,
                'max_match_len': MAX_LEN,
-               'num_heads': 8,
-               'num_enc_layers': 8,
+               'num_heads': 4,
+               'num_enc_layers': 4,
                'padding_idx': PAD_IDX,
                'dim_ff': 1024,
-               'epochs': 5,
+               'epochs': 100,
                'lr': 0.0001,
                'embeddings': torch.load(os.path.join(emb_data_dir, 'dcdr_emb512_elite_medium_45_epcs.pt'))}
 
@@ -94,10 +94,13 @@ def train_model(traindloader, valdloader, config_dict, device):
         avg_val_loss = running_val_loss / len(valdloader)
         val_losses.append(avg_val_loss)
 
-        if epoch+1 % 5 == 0:
-            torch.save(model, os.path.join(model_data_dir, f'model_both_medium_{epoch}_epcs.pt'))
+        if (epoch+1) % 5 == 0:
+            torch.save(model, os.path.join(model_data_dir, f'model_both_medium_{epoch}epcs.pt'))
         
         print(f"Epoch {epoch+1}/{epochs}, Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}")
+    
+    print('Saving final model.')
+    torch.save(model, os.path.join(model_data_dir, f'model_both_medium_final.pt'))
     
     return model, train_losses, val_losses
 
