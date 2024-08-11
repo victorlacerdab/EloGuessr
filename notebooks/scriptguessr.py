@@ -43,24 +43,33 @@ config_dict = {'emb_dim': 512,
                'num_enc_layers': 4,
                'padding_idx': PAD_IDX,
                'dim_ff': 1024,
-               'epochs': 100,
-               'lr': 0.0001,
-               'embeddings': torch.load(os.path.join(emb_data_dir, 'dcdr_emb512_elite_medium_45_epcs.pt'))}
+               'epochs': 10,
+               'lr': 0.000001,
+               'embeddings': torch.load(os.path.join(emb_data_dir, 'decoder_emb512_elite_medium.pt'))
+               }
 
-def train_model(traindloader, valdloader, config_dict, device):
+model = torch.load(os.path.join(model_data_dir, 'eloguessr_earlystop_58epcs.pt'))
+
+def train_model(traindloader, valdloader, pretrained_model, config_dict, device):
     epochs = config_dict['epochs']
-    model = EloGuessr(vocab_len=config_dict['vocab_len'], num_heads=config_dict['num_heads'],
-                      num_encoder_layers=config_dict['num_enc_layers'], embdim=config_dict['emb_dim'], dim_ff=config_dict['dim_ff'],
-                      padding_idx=config_dict['padding_idx'], max_match_len = config_dict['max_match_len'],
-                      pretrained_embeddings = config_dict['embeddings'], device = device)
-    
+    if pretrained_model is None:
+        model = EloGuessr(vocab_len=config_dict['vocab_len'], num_heads=config_dict['num_heads'],
+                        num_encoder_layers=config_dict['num_enc_layers'], embdim=config_dict['emb_dim'], dim_ff=config_dict['dim_ff'],
+                        padding_idx=config_dict['padding_idx'], max_match_len = config_dict['max_match_len'],
+                        pretrained_embeddings = config_dict['embeddings'], device = device)
+        model = model.to(device)
+    else:
+        print('Loading pretrained model.')
+        model = pretrained_model.to(device)
+
     optimizer = torch.optim.Adam(model.parameters(), lr=config_dict['lr'])
     loss_fn = nn.MSELoss()
     
     train_losses = []
     val_losses = []
-    
-    model.to(device)
+    best_val_loss = float('inf')
+    early_stop_counter = 0
+    patience = 3
     
     for epoch in range(epochs):
         model.train()
@@ -94,16 +103,26 @@ def train_model(traindloader, valdloader, config_dict, device):
         avg_val_loss = running_val_loss / len(valdloader)
         val_losses.append(avg_val_loss)
 
-        if (epoch+1) % 5 == 0:
+        if avg_val_loss < best_val_loss:
+            best_val_loss = avg_val_loss
+            early_stop_counter = 0
+        else:
+            early_stop_counter += 1
+
+        if early_stop_counter == patience:
+            print(f"Validation loss increased for {patience} consecutive epochs. Stopping training.")
+            torch.save(model, os.path.join(model_data_dir, f'eloguessr_earlystop_{epoch+1}epcs.pt'))
+            break
+
+        if (epoch+1) % 10 == 0:
             torch.save(model, os.path.join(model_data_dir, f'model_both_medium_{epoch}epcs.pt'))
-        
-        print(f"Epoch {epoch+1}/{epochs}, Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}")
+            print(f"Epoch {epoch+1}/{epochs}, Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}")
     
     print('Saving final model.')
-    torch.save(model, os.path.join(model_data_dir, f'model_both_medium_final.pt'))
+    torch.save(model, os.path.join(model_data_dir, f'model_both_medium_fffinal.pt'))
     
     return model, train_losses, val_losses
 
 print(f'Starting to train EloGuessr.')
-model, tls, vls = train_model(train_dloader, val_dloader, config_dict, device)
+model, tls, vls = train_model(train_dloader, val_dloader, None, config_dict, device)
 plot_losses(tls, vls)
