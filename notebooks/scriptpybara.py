@@ -8,21 +8,22 @@ from chesspybara import ChessPybara
 from utils import load_data, plot_losses, load_json_dict, save_embedding_layer
 
 torch.manual_seed(39)
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-print(device)
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
+
+if torch.cuda.is_available():
+    print(f"Using GPU: {torch.cuda.get_device_name(0)}")
+else:
+    print("CUDA is not available")
+
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 data_dir = '/Home/siv33/vbo084/EloGuessr/data/processed/'
-
-#fnames = ['chess_train_elite_medium.pt', 'chess_val_elite_medium.pt', 'chess_test_elite_medium.pt']
-#specnames = ['chess_elite_medium.json']
 
 fnames = ['chess_train_both_medium.pt', 'chess_val_both_medium.pt', 'chess_test_both_medium.pt']
 specnames = ['chess_both_medium.json']
 
 emb_data_dir = '/Home/siv33/vbo084/EloGuessr/models/embeddings'
-
-#fnames = ['chess_train_elite_full.pt', 'chess_val_elite_full.pt', 'chess_test_elite_full.pt']
-#specnames = ['chess_elite_full.json']
 
 dset_specs = load_json_dict(os.path.join(data_dir, specnames[0]))
 print(dset_specs)
@@ -30,19 +31,19 @@ VOCAB_LEN = dset_specs['vocab_len']
 PAD_IDX = dset_specs['pad_idx']
 MAX_LEN = dset_specs['match_len']
 
-BATCH_SIZE = 256
+BATCH_SIZE = 512
 train_dloader, val_dloader, test_dloader = load_data(data_dir, fnames, batch_size=BATCH_SIZE)
 del test_dloader
 
 config_dict = {'emb_dim': 512,
                'vocab_len': VOCAB_LEN,
                'max_match_len': MAX_LEN,
-               'num_heads': 8,
-               'num_enc_layers': 8,
+               'num_heads': 4,
+               'num_enc_layers': 4,
                'padding_idx': PAD_IDX,
-               'dim_ff': 2048,
-               'epochs': 50,
-               'lr': 0.000001}
+               'dim_ff': 1024,
+               'epochs': 20,
+               'lr': 0.0001}
 
 def train_causal(traindloader, valdloader, config_dict, emb_data_dir, device):
 
@@ -79,6 +80,9 @@ def train_causal(traindloader, valdloader, config_dict, emb_data_dir, device):
             outputs = outputs[:, :-1, :]
             outputs = outputs.reshape(outputs.size(0) * outputs.size(1), outputs.size(2))
 
+            # Many of these outputs/targets are just [PAD]
+            # Create a mask to disregard them
+
             loss = loss_fn(outputs, targets)
 
             loss.backward()
@@ -108,7 +112,7 @@ def train_causal(traindloader, valdloader, config_dict, emb_data_dir, device):
                 loss = loss_fn(outputs, targets)
                 total_val_loss += loss.item()
 
-        if epoch+1 % 5 == 0:
+        if (epoch + 1) % 10 == 0:
             save_embedding_layer(model, os.path.join(emb_data_dir, f'dcdr_emb512_elite_medium_{epoch}_epcs.pt'))
 
         avg_val_loss = total_val_loss / len(valdloader)
@@ -118,6 +122,7 @@ def train_causal(traindloader, valdloader, config_dict, emb_data_dir, device):
 
     return model, train_losses, val_losses
 
+print('Training the best Capybara Chess player.')
 model, tls, vls = train_causal(train_dloader, val_dloader, config_dict, emb_data_dir, device)
 plot_losses(tls, vls)
 
