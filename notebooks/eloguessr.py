@@ -13,7 +13,7 @@ class EloGuessr(nn.Module):
             pretrained_embeddings = torch.stack(list(pretrained_embeddings.values())).squeeze(0)
 
         if pretrained_embeddings is not None:
-            self.emb_layer = nn.Embedding.from_pretrained(pretrained_embeddings, freeze=True, padding_idx=padding_idx)
+            self.emb_layer = nn.Embedding.from_pretrained(pretrained_embeddings, freeze=False, padding_idx=padding_idx)
         else:
             self.emb_layer = nn.Embedding(num_embeddings=vocab_len, embedding_dim=embdim, padding_idx=padding_idx)
         self.posenc = PositionalEncoding(emb_dim=embdim, max_len=max_match_len)

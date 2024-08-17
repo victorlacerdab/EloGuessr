@@ -19,21 +19,20 @@ else:
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-data_dir = '/Home/siv33/vbo084/EloGuessr/data/processed/'
-emb_data_dir = '/Home/siv33/vbo084/EloGuessr/models/embeddings'
-model_data_dir = '/Home/siv33/vbo084/EloGuessr/models/final_models/'
+data_dir = 'PATH TO YOUR DATALOADERS'
+emb_data_dir = 'PATH TO PRETRAINED EMBEDDINGS'
+model_data_dir = 'PATH TO PRETRAINED MODELS (Optional)' 
 
-fnames = ['chess_train_both_medium.pt', 'chess_val_both_medium.pt', 'chess_test_both_medium.pt']
+fnames = ['chess_train_both_medium.pt', 'chess_val_both_medium.pt', 'chess_test_both_medium.pt'] # Names of your
 specnames = ['chess_both_medium.json']
 
 dset_specs = load_json_dict(os.path.join(data_dir, specnames[0]))
-print(dset_specs)
 VOCAB_LEN = dset_specs['vocab_len']
 PAD_IDX = dset_specs['pad_idx']
 MAX_LEN = dset_specs['match_len']
 
-BATCH_SIZE = 2056
-train_dloader, val_dloader, test_dloader = load_data(data_dir, fnames, batch_size=BATCH_SIZE)
+BATCH_SIZE = 1024
+train_dloader, val_dloader, test_dloader = load_data(data_dir, fnames, batch_size=BATCH_SIZE) # Creates dataloaders
 del test_dloader
 
 config_dict = {'emb_dim': 512,
@@ -44,13 +43,17 @@ config_dict = {'emb_dim': 512,
                'padding_idx': PAD_IDX,
                'dim_ff': 1024,
                'epochs': 10,
-               'lr': 0.000001,
-               'embeddings': torch.load(os.path.join(emb_data_dir, 'decoder_emb512_elite_medium.pt'))
+               'lr': 0.0001,
+               'embeddings': torch.load(os.path.join(emb_data_dir, 'PRETRAINED_EMB_NAME.pt'))
                }
 
-model = torch.load(os.path.join(model_data_dir, 'eloguessr_earlystop_58epcs.pt'))
-
 def train_model(traindloader, valdloader, pretrained_model, config_dict, device):
+
+    '''
+    If you want to load a pretrained_model, pass it to the function.
+    Otherwise, pass None.
+    '''
+
     epochs = config_dict['epochs']
     if pretrained_model is None:
         model = EloGuessr(vocab_len=config_dict['vocab_len'], num_heads=config_dict['num_heads'],
