@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 from eloguessr import EloGuessr
-from utils import load_data, plot_losses, load_json_dict
+from utils import path_dict, load_data, plot_losses, load_json_dict
 
 torch.manual_seed(22)
 
@@ -19,11 +19,11 @@ else:
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-data_dir = 'PATH TO YOUR DATALOADERS'
-emb_data_dir = 'PATH TO PRETRAINED EMBEDDINGS'
-model_data_dir = 'PATH TO PRETRAINED MODELS (Optional)' 
+data_dir = path_dict['data_dir'] # Data will be loaded from here
+emb_data_dir = path_dict['emb_dir'] # Embeddings will be loaded from here
+model_data_dir = path_dict['model_dir'] # Models will be saved here
 
-fnames = ['chess_train_both_medium.pt', 'chess_val_both_medium.pt', 'chess_test_both_medium.pt'] # Names of your
+fnames = ['chess_train_both_medium.pt', 'chess_val_both_medium.pt', 'chess_test_both_medium.pt'] # Names of your preprocessed files
 specnames = ['chess_both_medium.json']
 
 dset_specs = load_json_dict(os.path.join(data_dir, specnames[0]))

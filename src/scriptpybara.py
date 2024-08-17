@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 from chesspybara import ChessPybara
-from utils import load_data, plot_losses, load_json_dict, save_embedding_layer
+from utils import path_dict, load_data, plot_losses, load_json_dict, save_embedding_layer
 
 torch.manual_seed(39)
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
@@ -18,12 +18,12 @@ else:
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-data_dir = '/Home/siv33/vbo084/EloGuessr/data/processed/'
+data_dir = path_dict['data_dir']
 
 fnames = ['chess_train_both_medium.pt', 'chess_val_both_medium.pt', 'chess_test_both_medium.pt']
 specnames = ['chess_both_medium.json']
 
-emb_data_dir = '/Home/siv33/vbo084/EloGuessr/models/embeddings'
+emb_data_dir = path_dict['emb_dir']
 
 dset_specs = load_json_dict(os.path.join(data_dir, specnames[0]))
 print(dset_specs)

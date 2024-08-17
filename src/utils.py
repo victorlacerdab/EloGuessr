@@ -5,6 +5,10 @@ import json
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, Dataset
 
+path_dict = {'data_dir': None,
+             'model_dir': None,
+             'emb_dir': None}
+
 class EloGuessrDset(Dataset):
     def __init__(self, samples, labels):
         self.samples = torch.tensor(samples, dtype=torch.long)
