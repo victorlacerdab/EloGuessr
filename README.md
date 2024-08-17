@@ -2,9 +2,7 @@
 
 ![Chess Image](https://i.ytimg.com/vi/Y1xzL8I9sAE/maxresdefault.jpg)
 
-Based on the popular YouTube series by [GothamChess](https://www.youtube.com/@GothamChess), EloGuessr is a Transformers-based model for, you guessed it, guessing t he ELO.
-
-Details about dataset creation are provided below.
+Inspired by the popular YouTube series by [GothamChess](https://www.youtube.com/@GothamChess), EloGuessr is a Transformers-based model for, you guessed it, guessing the ELO of chess matches.
 
 # Data
 
@@ -28,15 +26,31 @@ Although this might seem counterintuitive at first, it is easily justifiable. Si
 
 # Results
 
-The results for +- 25, +- 50, +- 100, +- 250, and +-500 are shown in the table below.
+The table below shows the performance of the trained models on the tolerance-accuracy metric:
 
-| Top-N  | Accuracy (%) |
-|--------|--------------|
-| @25    | 14.99        |
-| @50    | 29.41        |
-| @100   | 53.60        |
-| @250   | 83.75        |
-| @500   | 94.54        |
+
+| Model | TAcc@25 | TAcc@50 | TAcc@100 | TAcc@250 | TAcc@500 |
+|-------|---------|---------|----------|----------|----------|
+| 0 | 15.24% | 29.56% | 51.89% | 82.18% | 94.48% |
+| 1 | 14.71% | 28.78% | 52.21% | 82.45% | 94.33% |
+| 2 | 16.07% | 31.16% | 53.79% | 82.51% | 93.92% |
+
+| Top-N Accuracy | Accuracy (%) |
+|----------------|--------------|
+| Accuracy@25    | 15.03%       |
+| Accuracy@50    | 29.60%       |
+| Accuracy@100   | 53.83%       |
+| Accuracy@250   | 83.80%       |
+| Accuracy@500   | 94.51%       |
+
+No embeddings same epochs:
+
+Accuracy@25: 14.710555170176107%
+Accuracy@50: 28.777775291458745%
+Accuracy@100: 52.20635950681376%
+Accuracy@250: 82.45317639687619%
+Accuracy@500: 94.325225446978%
+
 
 # Improvements
 
